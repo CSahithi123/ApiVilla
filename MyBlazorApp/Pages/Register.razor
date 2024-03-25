@@ -1,0 +1,90 @@
+﻿@page "/register"
+@using MyBlazorApp.Services
+@using ViewModels
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@inject IRegisterBlazorService registerblazorService // Assuming IEmployeeService is your service interface for handling employee data
+@inject IJSRuntime JSRuntime
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="First name" HelperText="Max. 8 characters" @bind-Value="model.Name" For="@(() => model.Name)" />
+                    <MudTextField Label="Phone Number" Class="mt-3" @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+                    <MudTextField Label="User Name" HelperText="User name" Class="mt-3" @bind-Value="model.UserName" For="@(() => model.UserName)" InputType="InputType.Text" />
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center"> Fill out the form correctly to see the success message. </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
+        public string Name { get; set; }
+
+        [Required]
+       
+        public string PhoneNumber { get; set; }
+
+        [Required]
+        [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
+        public string UserName { get; set; }
+
+        [Required]
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        public string Password { get; set; }
+
+        
+    }
+
+    private async Task OnValidSubmit()
+    {
+        // Call your service method to add the employee to the database
+        bool result = await registerblazorService.RegisterAsync(model);
+
+        if (result)
+        {
+            // Reset the model to clear the form values
+            model = new RegisterAccountForm();
+
+            // Set success flag to true
+            success = true;
+        }
+        else
+        {
+            // Handle error scenario
+        }
+    }
+}

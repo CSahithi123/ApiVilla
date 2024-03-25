@@ -1,0 +1,64 @@
+﻿@page "/fetchvillalist/{villaId}"
+
+@using MudBlazor
+@using ViewModels
+@inject MyBlazorApp.Services.IBlazorService service
+@inject NavigationManager navigate
+
+<h3>FetchVilla</h3>
+
+<MudContainer Class="mt-4">
+    <MudPaper Class="p-4 px-md-6">
+        <MudCardHeader Typo="Typo.h5" Align="Align.Center">Villa Details</MudCardHeader>
+
+        @if (villa != null)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudDrawerHeader Typo="Typo.subtitle1" Class="mt-2 mb-0">Villa ID:</MudDrawerHeader>
+                <MudText Typo="Typo.body1">@villa.Id</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudDrawerHeader Typo="Typo.subtitle1" Class="mt-2 mb-0">Villa Name:</MudDrawerHeader>
+                <MudText Typo="Typo.body1">@villa.Name</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudDrawerHeader Typo="Typo.subtitle1" Class="mt-2 mb-0">Price:</MudDrawerHeader>
+                <MudText Typo="Typo.body1">@villa.Price</MudText>
+            </MudItem>
+            
+
+
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-3">Product not found.</MudAlert>
+        }
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" @onclick="NavigateToProducts">
+            Back to Villas
+        </MudButton>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    [Parameter]
+    public string villaId { get; set; }
+    private VillaVM villa;
+
+    int Id;
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(villaId, out Id))
+        {
+            villa = await service.GetVillaById(Id);
+        }
+    }
+
+
+    private void NavigateToProducts()
+    {
+        navigate.NavigateTo("/villalist");
+    }
+
+}

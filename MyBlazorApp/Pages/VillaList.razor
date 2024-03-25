@@ -1,0 +1,71 @@
+﻿@page "/villalist"
+@using ViewModels
+
+@inject MyBlazorApp.Services.IBlazorService service
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+<PageTitle>Villa List</PageTitle>
+<h3>Villa List</h3>
+@if (villas == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var villa in villas)
+            {
+                <tr>
+                    <td><a href="@($"fetchvillalist/{villa.Id}")">@villa.Name</a> </td>
+                    <td>@villa.Price</td>
+                    <td>@villa.Description</td>
+                    <td>
+                        <button class="btn btn-success" @onclick="() => EditVilla(villa)">Edit&nbsp;</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteVilla(villa)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<VillaVM> villas = new List<VillaVM>();//initialize view model
+    protected override async Task OnInitializedAsync()//retrieves products from service and populate product list
+    {
+        villas = (await service.GetAll()).ToList();
+    }
+
+    private void EditVilla(VillaVM villa)
+    {
+        NavigationManager.NavigateTo($"/editvillalist/{villa.Id}");//route by id when edit clicked
+    }
+
+
+
+
+    private async Task DeleteVilla(VillaVM villa)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {villa.Name}?");//to diaplay confiurable dialouge
+        if (confirmed)
+        {
+            try
+            {
+                await service.Delete(villa.Id);//if confirm invoke services to delete
+                villas.Remove(villa);  //remove it
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting product: {ex.Message}");
+            }
+        }
+    }
+}

@@ -1,0 +1,75 @@
+﻿@page "/editvillalist/{villaId}"
+@using ViewModels
+@using System.Text.Json
+@using MudBlazor
+@inject MyBlazorApp.Services.IBlazorService service
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Edit Villa List</PageTitle>
+<h1>Edit Villa List</h1>
+@if (villa == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <MudCard>
+    <MudCardContent>
+    <MudForm Model="villa">
+        <MudTextField @bind-Value="villa.Name" Label="Name" />
+        <MudNumericField @bind-Value="villa.Price" Label="Price" />
+        <MudTextField @bind-Value="villa.Description" Label="Description" Multiline="true" Rows="3" />
+        <MudTextField @bind-Value="villa.Sqft" Label="Sqft" />
+        <MudTextField @bind-Value="villa.Occupancy" Label="Occupancy" />
+        <MudTextField @bind-Value="villa.ImageUrl" Label="ImageUrl" />
+        <br />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveChanges">Save Changes</MudButton>
+    </MudForm>
+    </MudCardContent>
+    </MudCard>
+}
+@code {
+    [Parameter]
+    public string villaId { get; set; }//declaring parameter named productId(to specify id of componnet when navigate)
+    private VillaVM villa;//rep product being edited
+    protected override async Task OnInitializedAsync()//lifecycle method called when component initialized
+    {
+        try
+        {
+            if (int.TryParse(villaId, out int parsedId))//try->parse productId to int(parseId) if success retrieve id by getproductbyid method in service
+            {
+                villa = await service.GetVillaById(parsedId);
+                Console.WriteLine($"Product data: {JsonSerializer.Serialize(villa)}");//logs product data to console
+                if (villa == null)
+                {
+                    NavigationManager.NavigateTo("/villalist");//if not naviagte to table
+                }
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/villalist");//if fail navigates
+            }
+        }
+        catch (Exception ex)// fail and exception occured naviage and show error msg
+        {
+            Console.WriteLine($"Error initializing edit page: {ex.Message}");
+        }
+    }
+
+    private async Task SaveChanges()//mathod to save changes made
+    {
+        try
+        {
+            if (villa != null)
+            {
+                await service.Update(villa);//call update method
+                NavigationManager.NavigateTo("/villalist");//navigate after update
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving changes: {ex.Message}");//if error catch here
+        }
+    }
+}

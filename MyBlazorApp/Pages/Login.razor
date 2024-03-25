@@ -1,0 +1,62 @@
+﻿@page "/login"
+@using ViewModels
+@using MyBlazorApp.Services
+@using MyBlazorApp.Service
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@using System.ComponentModel.DataAnnotations
+@inject IAuthService AuthService
+
+<MudContainer>
+    <MudPaper Class="pa-4">
+        <h3>Login</h3>
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <MudTextField Label="UserName" @bind-Value="@loginModel.UserName" Required />
+            <MudTextField Label="Password" @bind-Value="@loginModel.Password" Required InputType="InputType.Password" /> <br />
+            <MudButton Type="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Login</MudButton>
+        </EditForm>
+        @if (loginSuccess)
+        {
+            <MudAlert Severity="Severity.Success">Login successful!</MudAlert>
+        }
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private string errorMessage;
+    private bool loginSuccess;
+
+    public class LoginModel
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            bool isAuthenticated = await AuthService.LoginAsync(loginModel.UserName, loginModel.Password);
+            if (isAuthenticated)
+            {
+                loginSuccess = true; // Set the login success flag
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Invalid email or password. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+    }
+}
